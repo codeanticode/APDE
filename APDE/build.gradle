@@ -68,4 +68,5 @@ dependencies {
     implementation 'com.takisoft.fix:preference-v7:27.0.1.0'
     implementation 'com.google.android.gms:play-services-auth:15.0.1'
     implementation 'com.google.android.gms:play-services-wearable:15.0.1'
+    implementation 'com.firebase:geofire-android:3.0.0'
 }
