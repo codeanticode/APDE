@@ -1,7 +1,6 @@
 package com.calsignlabs.apde.tool;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
@@ -10,12 +9,13 @@ import android.support.v7.app.AlertDialog;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import com.calsignlabs.apde.APDE;
 import com.calsignlabs.apde.KeyBinding;
 import com.calsignlabs.apde.R;
 
+// https://github.com/firebase/geofire-android
+// https://stackoverflow.com/questions/40959215/geofire-android-to-store-and-retrive-locations-and-display-it-on-map
 public class ARBrowser implements Tool {
   public static final String PACKAGE_NAME = "com.calsignlabs.apde.tool.ARBrowser";
 
@@ -37,17 +37,23 @@ public class ARBrowser implements Tool {
 
   @Override
   public void run() {
-    if(dialog == null) {
+
+    checkLocationPermission();
+
+//    if(dialog == null) {
+
       AlertDialog.Builder builder = new AlertDialog.Builder(context.getEditor());
       builder.setTitle(R.string.tool_ar_browser);
 
-      layout = (ConstraintLayout) View.inflate(new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog), R.layout.ar_browser, null);
+      if (context.isSketchbook()) {
+        layout = (ConstraintLayout) View.inflate(new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog), R.layout.ar_browser_upload, null);
+      } else {
+        layout = (ConstraintLayout) View.inflate(new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog), R.layout.ar_browser_download, null);
+      }
 
       builder.setView(layout);
       dialog = builder.create();
-
-      checkLocationPermission();
-    }
+//    }
 
     dialog.show();
   }
