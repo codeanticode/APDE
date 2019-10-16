@@ -51,6 +51,7 @@ import com.calsignlabs.apde.tool.ExportSignedPackage;
 import com.calsignlabs.apde.tool.FindInReference;
 import com.calsignlabs.apde.tool.FindReplace;
 import com.calsignlabs.apde.tool.GitManager;
+import com.calsignlabs.apde.tool.ARBrowser;
 import com.calsignlabs.apde.tool.ImportLibrary;
 import com.calsignlabs.apde.tool.IncreaseIndent;
 import com.calsignlabs.apde.tool.ManageLibraries;
@@ -1544,7 +1545,7 @@ public class APDE extends Application {
 		}
 		
 		String[] coreTools = new String[] {
-				AutoFormat.PACKAGE_NAME, ImportLibrary.PACKAGE_NAME,
+				ARBrowser.PACKAGE_NAME, AutoFormat.PACKAGE_NAME, ImportLibrary.PACKAGE_NAME,
 				ManageLibraries.PACKAGE_NAME, ColorSelector.PACKAGE_NAME,
 				CommentUncomment.PACKAGE_NAME, IncreaseIndent.PACKAGE_NAME, DecreaseIndent.PACKAGE_NAME,
 				/*ExportGradleProject.PACKAGE_NAME,*/ ExportSignedPackage.PACKAGE_NAME,

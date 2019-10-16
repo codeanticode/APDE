@@ -309,7 +309,11 @@
 	
 	<!-- Name of the git manager tool. -->
 	<string name="tool_git_manager">Git Manager</string>
-	
+
+	<!-- Name of the AR browser tool. -->
+	<string name="tool_ar_browser">AR Browser</string>
+	<string name="tool_ar_browser_find_nearby">Find nearby AR sketches</string>
+
 	<!-- File deletion task. -->
 	<string name="task_delete_begin">Deleting file&#8230;</string>
 	<string name="task_delete_finish">Deleted file.</string>
