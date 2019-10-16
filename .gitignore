@@ -1,5 +1,6 @@
 aFileChooser/build/**
 APDE/build/**
+APDE/google-services.json
 wear-companion/build/**
 sketch-preview/build/**
 build/**
@@ -15,3 +16,4 @@ local.properties
 *.iml
 gradlew
 gradlew.bat
+.DS_Store
