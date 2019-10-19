@@ -296,7 +296,8 @@ public class ARBrowser implements Tool {
         } else {
           System.out.println("Location saved on server successfully! " + key);
 
-          database.child(key).child("code").setValue("void main;")
+          String text = context.getCodeArea().getText().toString();
+          database.child(key).child("code").setValue(text)
               .addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
@@ -402,6 +403,8 @@ public class ARBrowser implements Tool {
         // Get Post object and use the values to update the UI
         String code = dataSnapshot.getValue(String.class);
         System.out.println("RECEIVED CODE " + code);
+
+        context.getEditor().newSketch(code);
       }
 
       @Override

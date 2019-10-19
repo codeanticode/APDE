@@ -1897,7 +1897,49 @@ public class EditorActivity extends AppCompatActivity {
 		// Reload the navigation drawer
 		forceDrawerReload();
 	}
-    
+
+
+	public void newSketch(String text) {
+		//Set the title of the action bar
+		getSupportActionBar().setTitle(getGlobalState().getSketchName());
+		//Reload the action bar actions and overflow
+		supportInvalidateOptionsMenu();
+
+		//Get rid of any existing tabs
+//		tabBar.removeAllTabs();
+		tabs.clear();
+		codePagerAdapter.notifyDataSetChanged();
+
+		//Add the default "sketch" tab
+		addDefaultTab(APDE.DEFAULT_SKETCH_TAB);
+
+		//Select the new tab
+		selectCode(0);
+
+		//Clear the code area
+		CodeEditText code = ((CodeEditText) findViewById(R.id.code));
+		code.setText(text); //We don't use setNoUndoText() because it screws up the undo history...
+
+		//Fix a strange bug...
+		getSelectedSketchFile().clearUndoRedo();
+
+		//Get rid of previous syntax highlighter data
+		code.clearTokens();
+//
+//		//Make sure the code area is editable
+		code.setFocusable(true);
+		code.setFocusableInTouchMode(true);
+
+		// Save the new sketch
+		autoSave();
+		// Add to recents
+		getGlobalState().putRecentSketch(getGlobalState().getSketchLocationType(), getGlobalState().getSketchPath());
+
+		// Reload the navigation drawer
+		forceDrawerReload();
+	}
+
+
 	/**
 	 * Loads a sketch
 	 * 
