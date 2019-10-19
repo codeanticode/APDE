@@ -26,7 +26,7 @@
     </ScrollView>
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/find_nearby_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tool_ar_browser_find_nearby"

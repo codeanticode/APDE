@@ -87,4 +87,7 @@ public class ExportGradleProject implements Tool {
 	public boolean createSelectionActionModeMenuItem(MenuItem convert) {
 		return false;
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }

@@ -38,4 +38,16 @@ public interface Tool extends Runnable {
 	 * @return whether or not the MenuItem should appear in the selection CAB
 	 */
 	public boolean createSelectionActionModeMenuItem(MenuItem convert);
+
+
+	/**
+	 * Gets called automatically when the user responds to the permission request triggered by the
+	 * tool and passes along the arguments received by onRequestPermissionsResult() in APDE's editor
+	 * activity
+	 *
+	 * @param requestCode  the request code passed in the requestPermissions call
+	 * @param permissions  the requested permissions
+	 * @param grantResults the grant results for the corresponding permissions
+	 */
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults);
 }

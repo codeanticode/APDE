@@ -187,7 +187,7 @@ public class EditorActivity extends AppCompatActivity {
 	public static final int FLAG_SET_WALLPAPER = 7;
 	// Intent flag to start the preview after installing the sketch previewer APK
 	public static final int FLAG_RUN_PREVIEW = 8;
-	
+
 	public ScheduledThreadPoolExecutor autoSaveTimer;
 	public ScheduledFuture<?> autoSaveTimerTask;
 	public Runnable autoSaveTimerAction = () -> {
@@ -206,10 +206,10 @@ public class EditorActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
-		
-		toolbar = (Toolbar) findViewById(R.id.toolbar);
-		toolbar.setBackgroundColor(getResources().getColor(R.color.bar_overlay));
-		setSupportActionBar(toolbar);
+
+			toolbar = (Toolbar) findViewById(R.id.toolbar);
+		  toolbar.setBackgroundColor(getResources().getColor(R.color.bar_overlay));
+		  setSupportActionBar(toolbar);
 		
 		// Create custom output / error streams for the console
 		outStream = new PrintStream(new ConsoleStream());
@@ -849,12 +849,20 @@ public class EditorActivity extends AppCompatActivity {
 	
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+    // First, have the tools handling the permission results in case any of them was requested
+		// from a tool
+		for(Tool tool : getGlobalState().getTools()) {
+      tool.handlePermissionsResult(requestCode, permissions, grantResults);
+		}
+
+
 		switch (requestCode) {
-		case PERMISSIONS_REQUEST_CODE:
-			if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-				// TODO Explain that we NEED this permission!
-			}
-			break;
+			case PERMISSIONS_REQUEST_CODE:
+				if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+					// TODO Explain that we NEED this permission!
+				}
+				break;
 		}
 	}
 	

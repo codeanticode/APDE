@@ -76,7 +76,10 @@ public class UninstallSketch implements Tool {
 		
 		return false;
 	}
-	
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
+
 	private String getPackageName(String sketchName) {
 		return "processing.test." + sketchName.toLowerCase(Locale.US);
 	}

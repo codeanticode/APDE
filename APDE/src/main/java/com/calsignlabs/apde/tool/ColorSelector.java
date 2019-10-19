@@ -581,4 +581,7 @@ public class ColorSelector implements Tool {
 			public void onValueChanged(float value);
 		}
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }

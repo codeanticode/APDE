@@ -47,4 +47,7 @@ public class OpenReference implements Tool {
 			}
 		});
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }

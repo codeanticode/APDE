@@ -83,4 +83,7 @@ public class IncreaseIndent implements Tool {
 		
 		return true;
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }

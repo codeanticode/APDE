@@ -55,4 +55,7 @@ public class AutoFormat implements Tool {
 		//TODO maybe support auto formatting of selection, not just the entire file
 		return false;
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }

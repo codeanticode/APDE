@@ -103,4 +103,7 @@ public class CommentUncomment implements Tool {
 		
 		return true;
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }

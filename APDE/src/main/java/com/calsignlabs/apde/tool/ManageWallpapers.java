@@ -48,4 +48,7 @@ public class ManageWallpapers implements Tool {
 		intent.setAction(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
 		context.getEditor().startActivity(intent);
 	}
+
+	@Override
+	public void handlePermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 }
