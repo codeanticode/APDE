@@ -129,6 +129,9 @@ public class ARBrowser implements Tool {
 
         downloadDialog = builder.create();
       }
+
+      LinearLayout layout = downloadLayout.findViewById(R.id.nearby_sketches_layout);
+      layout.removeAllViewsInLayout();
       dialog = downloadDialog;
     }
 
@@ -315,8 +318,6 @@ public class ARBrowser implements Tool {
   }
 
   private void listSketches(Location location) {
-    LinearLayout layout = downloadLayout.findViewById(R.id.nearby_sketches_layout);
-    layout.removeAllViewsInLayout();
     System.out.println("Querying sketches near location " + location.getLatitude() + ", " + location.getLongitude());
     queryKeys.clear();
 
@@ -376,5 +377,6 @@ public class ARBrowser implements Tool {
 
   private void loadSketch(String key) {
     System.out.println(String.format("Will load this sketch into APDE", key));
+    downloadDialog.hide();
   }
 }
