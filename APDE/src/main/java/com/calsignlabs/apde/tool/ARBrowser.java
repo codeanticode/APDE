@@ -29,14 +29,17 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -62,6 +65,7 @@ public class ARBrowser implements Tool {
 
   private ArrayList<String> queryKeys = new ArrayList<String>();
 
+  private GeoQuery geoQuery;
   private DatabaseReference database;
 
   // 0.1 km
@@ -292,7 +296,20 @@ public class ARBrowser implements Tool {
         } else {
           System.out.println("Location saved on server successfully! " + key);
 
-          database.child(key).child("code").setValue("void main;");
+          database.child(key).child("code").setValue("void main;")
+              .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                  System.out.println("Write was successful!");
+                }
+              })
+              .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                  System.err.println("There was an error saving the code for sketch  " + key);
+                  e.printStackTrace();
+                }
+              });
 
           uploadDialog.hide();
         }
@@ -322,7 +339,7 @@ public class ARBrowser implements Tool {
     queryKeys.clear();
 
     // creates a new query around the current location with a radius of QUERY_RADIUS kilometers
-    GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(location.getLatitude(), location.getLongitude()), QUERY_RADIUS);
+    geoQuery = geoFire.queryAtLocation(new GeoLocation(location.getLatitude(), location.getLongitude()), QUERY_RADIUS);
     geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
       @Override
       public void onKeyEntered(String key, GeoLocation location) {
@@ -345,6 +362,7 @@ public class ARBrowser implements Tool {
       public void onGeoQueryReady() {
         System.out.println("All initial data has been loaded and events have been fired!");
         updateList();
+        geoQuery.removeAllListeners();
       }
 
       @Override
@@ -376,7 +394,24 @@ public class ARBrowser implements Tool {
   }
 
   private void loadSketch(String key) {
-    System.out.println(String.format("Will load this sketch into APDE", key));
+    System.out.println("Will load this sketch into APDE " + key);
+
+    database.child(key).child("code").addListenerForSingleValueEvent(new ValueEventListener() {
+      @Override
+      public void onDataChange(DataSnapshot dataSnapshot) {
+        // Get Post object and use the values to update the UI
+        String code = dataSnapshot.getValue(String.class);
+        System.out.println("RECEIVED CODE " + code);
+      }
+
+      @Override
+      public void onCancelled(DatabaseError databaseError) {
+        // Getting Post failed, log a message
+        // ...
+      }
+    });
+
+//    geoFire.re
     downloadDialog.hide();
   }
 }
