@@ -2,21 +2,20 @@ package com.calsignlabs.apde.tool;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.calsignlabs.apde.APDE;
@@ -28,8 +27,6 @@ import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -41,6 +38,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+
 // https://github.com/firebase/geofire-java
 // https://stackoverflow.com/questions/40959215/geofire-android-to-store-and-retrive-locations-and-display-it-on-map
 public class ARBrowser implements Tool {
@@ -51,12 +50,22 @@ public class ARBrowser implements Tool {
   private AlertDialog uploadDialog;
   private AlertDialog downloadDialog;
 
+  private ConstraintLayout downloadLayout;
+  private ConstraintLayout uploadLayout;
+
   private FirebaseAuth mAuth;
   private GeoFire geoFire;
   private FirebaseUser currentUser;
 
   private FusedLocationProviderClient locationClient;
   private LocationCallback locationCallback;
+
+  private ArrayList<String> queryKeys = new ArrayList<String>();
+
+  private DatabaseReference database;
+
+  // 0.1 km
+  protected final float QUERY_RADIUS = 0.1f;
 
   @Override
   public void init(APDE context) {
@@ -80,16 +89,18 @@ public class ARBrowser implements Tool {
       if (uploadDialog == null) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context.getEditor());
         builder.setTitle(R.string.tool_ar_browser);
-        ConstraintLayout layout = (ConstraintLayout) View.inflate(new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog), R.layout.ar_browser_upload,null);
-        builder.setView(layout);
+        uploadLayout = (ConstraintLayout) View.inflate(
+            new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog),
+                                    R.layout.ar_browser_upload,null);
+        builder.setView(uploadLayout);
 
-        Button uploadButton = layout.findViewById(R.id.upload_button);
+        Button uploadButton = uploadLayout.findViewById(R.id.upload_button);
         uploadButton.setOnClickListener(new View.OnClickListener() {
           @SuppressWarnings("deprecation")
           @SuppressLint("NewApi")
           @Override
           public void onClick(View view) {
-            requestLastLocation();
+            uploadCurrentSketchToLastLocation();
           }
         });
 
@@ -100,40 +111,23 @@ public class ARBrowser implements Tool {
       if (downloadDialog == null) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context.getEditor());
         builder.setTitle(R.string.tool_ar_browser);
-        ConstraintLayout layout = (ConstraintLayout) View.inflate(new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog), R.layout.ar_browser_download,null);
-        builder.setView(layout);
-        downloadDialog = builder.create();
+        downloadLayout = (ConstraintLayout) View.inflate(
+            new ContextThemeWrapper(context, R.style.Theme_AppCompat_Dialog),
+                                    R.layout.ar_browser_download,null);
+        builder.setView(downloadLayout);
 
 
-        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(42.3824987, -71.1092777), 0.1);
-        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+        Button uploadButton = downloadLayout.findViewById(R.id.find_nearby_button);
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+          @SuppressWarnings("deprecation")
+          @SuppressLint("NewApi")
           @Override
-          public void onKeyEntered(String key, GeoLocation location) {
-            System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
-          }
-
-          @Override
-          public void onKeyExited(String key) {
-            System.out.println(String.format("Key %s is no longer in the search area", key));
-          }
-
-          @Override
-          public void onKeyMoved(String key, GeoLocation location) {
-            System.out.println(String.format("Key %s moved within the search area to [%f,%f]", key, location.latitude, location.longitude));
-          }
-
-          @Override
-          public void onGeoQueryReady() {
-            System.out.println("All initial data has been loaded and events have been fired!");
-          }
-
-          @Override
-          public void onGeoQueryError(DatabaseError error) {
-            System.err.println("There was an error with this query: " + error);
+          public void onClick(View view) {
+            requestNearbySketches();
           }
         });
 
-
+        downloadDialog = builder.create();
       }
       dialog = downloadDialog;
     }
@@ -183,7 +177,6 @@ public class ARBrowser implements Tool {
         }
         break;
     }
-
   }
 
   private void checkLocationPermission() {
@@ -202,8 +195,7 @@ public class ARBrowser implements Tool {
       } else {
         // No explanation needed; request the permission
         ActivityCompat.requestPermissions(context.getEditor(),
-            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-            LOCATION_REQUEST_CODE);
+            new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
 
         // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
         // app-defined int constant. The callback method gets the
@@ -263,13 +255,13 @@ public class ARBrowser implements Tool {
             }
       });
 
-      DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-      geoFire = new GeoFire(ref);
+      database = FirebaseDatabase.getInstance().getReference();
+      geoFire = new GeoFire(database);
       System.out.println(geoFire);
     }
   }
 
-  private void requestLastLocation() {
+  private void uploadCurrentSketchToLastLocation() {
     locationClient.getLastLocation()
       .addOnSuccessListener(context.getEditor(), new OnSuccessListener<Location>() {
         @Override
@@ -278,6 +270,8 @@ public class ARBrowser implements Tool {
           if (location != null) {
             // Logic to handle location object
             uploadSketch(location);
+          } else {
+            Toast.makeText(context.getEditor(), "Cannot retrieve current location", Toast.LENGTH_SHORT).show();
           }
         }
     });
@@ -285,8 +279,6 @@ public class ARBrowser implements Tool {
 
   private void uploadSketch(Location location) {
     String name = context.getSketchName();
-
-
 
     System.out.println("Uploading sketch " + name + " to location " + location.getLatitude() + ", " + location.getLongitude());
     geoFire.setLocation(name, new GeoLocation(location.getLatitude(), location.getLongitude()), new GeoFire.CompletionListener() {
@@ -296,8 +288,93 @@ public class ARBrowser implements Tool {
           System.err.println("There was an error saving the location to GeoFire: " + error);
         } else {
           System.out.println("Location saved on server successfully! " + key);
+
+          database.child(key).child("code").setValue("void main;");
+
+          uploadDialog.hide();
         }
       }
     });
+  }
+
+
+  private void requestNearbySketches() {
+    locationClient.getLastLocation()
+        .addOnSuccessListener(context.getEditor(), new OnSuccessListener<Location>() {
+          @Override
+          public void onSuccess(Location location) {
+            // Got last known location. In some rare situations this can be null.
+            if (location != null) {
+              // Logic to handle location object
+              listSketches(location);
+            } else {
+              Toast.makeText(context.getEditor(), "Cannot retrieve current location", Toast.LENGTH_SHORT).show();
+            }
+          }
+        });
+  }
+
+  private void listSketches(Location location) {
+    LinearLayout layout = downloadLayout.findViewById(R.id.nearby_sketches_layout);
+    layout.removeAllViewsInLayout();
+    System.out.println("Querying sketches near location " + location.getLatitude() + ", " + location.getLongitude());
+    queryKeys.clear();
+
+    // creates a new query around the current location with a radius of QUERY_RADIUS kilometers
+    GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(location.getLatitude(), location.getLongitude()), QUERY_RADIUS);
+    geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+      @Override
+      public void onKeyEntered(String key, GeoLocation location) {
+        System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
+        queryKeys.add(key);
+      }
+
+      @Override
+      public void onKeyExited(String key) {
+        System.out.println(String.format("Key %s is no longer in the search area", key));
+        queryKeys.remove(key);
+      }
+
+      @Override
+      public void onKeyMoved(String key, GeoLocation location) {
+        System.out.println(String.format("Key %s moved within the search area to [%f,%f]", key, location.latitude, location.longitude));
+      }
+
+      @Override
+      public void onGeoQueryReady() {
+        System.out.println("All initial data has been loaded and events have been fired!");
+        updateList();
+      }
+
+      @Override
+      public void onGeoQueryError(DatabaseError error) {
+        System.err.println("There was an error with this query: " + error);
+      }
+    });
+  }
+
+  private void updateList() {
+    LinearLayout layout = downloadLayout.findViewById(R.id.nearby_sketches_layout);
+    for (String key: queryKeys) {
+      Button button = new Button(context);
+      LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+      params.setMargins(0, 5, 0, 5);
+      params.gravity = Gravity.CENTER;
+      button.setLayoutParams(params);
+      button.setText(key);
+      layout.addView(button);
+      button.setOnClickListener(new View.OnClickListener() {
+        @SuppressWarnings("deprecation")
+        @SuppressLint("NewApi")
+        @Override
+        public void onClick(View view) {
+          loadSketch(key);
+        }
+      });
+    }
+  }
+
+  private void loadSketch(String key) {
+    System.out.println(String.format("Will load this sketch into APDE", key));
   }
 }
