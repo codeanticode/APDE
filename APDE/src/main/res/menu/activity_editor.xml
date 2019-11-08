@@ -30,6 +30,10 @@
 				android:id="@+id/menu_comp_select_watchface"
 				android:title="@string/editor_menu_comp_select_watchface"
 				android:icon="@drawable/ic_comp_watchface" />
+            <item
+                android:id="@+id/menu_comp_select_ar"
+                android:title="@string/editor_menu_comp_select_ar"
+                android:icon="@drawable/ic_comp_ar" />
 			<item
 				android:id="@+id/menu_comp_select_vr"
 				android:title="@string/editor_menu_comp_select_vr"

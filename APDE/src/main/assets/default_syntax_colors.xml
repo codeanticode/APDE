@@ -66,7 +66,12 @@
         <keyword style="keyword_processing_function" function="true" reference="processing_android" reference_target="vr/eye">eye</keyword>
         <keyword style="keyword_processing_function" function="true" reference="processing_android" reference_target="vr/eye">getEyeMatrix</keyword>
         <keyword style="keyword_processing_function" function="true" reference="processing_android" reference_target="vr/object">getObjectMatrix</keyword>
-        
+
+        <!-- AR -->
+        <keyword style="keyword_processing_function" function="true" reference="processing_android" reference_target="ar/tracker">ARTracker</keyword>
+        <keyword style="keyword_processing_function" function="true" reference="processing_android" reference_target="ar/trackable">ARTrackable</keyword>
+        <keyword style="keyword_processing_function" function="true" reference="processing_android" reference_target="ar/anchor">ARAnchor</keyword>
+
         <!-- Processing functions -->
         <keyword style="keyword_processing_function" function="true">size</keyword>
 		<keyword style="keyword_processing_function" function="true">fullScreen</keyword>
@@ -821,8 +826,10 @@
         <keyword style="keyword_processing_constant" reference_target="size_">OPENGL</keyword>
         <keyword style="keyword_processing_constant" reference_target="size_">P2D</keyword>
         <keyword style="keyword_processing_constant" reference_target="size_">P3D</keyword>
+        <keyword style="keyword_processing_constant" reference="processing_android" reference_target="vr/renderers">VR</keyword>
         <keyword style="keyword_processing_constant" reference="processing_android" reference_target="vr/renderers">STEREO</keyword>
         <keyword style="keyword_processing_constant" reference="processing_android" reference_target="vr/renderers">MONO</keyword>
+        <keyword style="keyword_processing_constant" reference="processing_android" reference_target="ar/renderers">AR</keyword>
         
         <!-- Processing class (PXxx) fields -->
         <keyword style="keyword_processing_variable" class="PImage">pixels</keyword>

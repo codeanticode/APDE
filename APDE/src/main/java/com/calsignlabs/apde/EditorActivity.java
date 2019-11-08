@@ -2668,6 +2668,7 @@ public class EditorActivity extends AppCompatActivity {
 		menu.findItem(R.id.menu_comp_select_wallpaper).getIcon().setAlpha(getComponentTarget() == ComponentTarget.WALLPAPER ? alphaSelected : alphaUnelected);
 		menu.findItem(R.id.menu_comp_select_watchface).getIcon().setAlpha(getComponentTarget() == ComponentTarget.WATCHFACE ? alphaSelected : alphaUnelected);
 		menu.findItem(R.id.menu_comp_select_vr).getIcon().setAlpha(getComponentTarget() == ComponentTarget.VR ? alphaSelected : alphaUnelected);
+		menu.findItem(R.id.menu_comp_select_ar).getIcon().setAlpha(getComponentTarget() == ComponentTarget.AR ? alphaSelected : alphaUnelected);
 		menu.findItem(R.id.menu_comp_select_preview).getIcon().setAlpha(getComponentTarget() == ComponentTarget.PREVIEW ? alphaSelected : alphaUnelected);
     }
     
@@ -2725,6 +2726,9 @@ public class EditorActivity extends AppCompatActivity {
 			case R.id.menu_comp_select_vr:
 				setComponentTarget(ComponentTarget.VR);
 				return true;
+      case R.id.menu_comp_select_ar:
+      	setComponentTarget(ComponentTarget.AR);
+      	return true;
 			case R.id.menu_comp_select_preview:
 				setComponentTarget(ComponentTarget.PREVIEW);
 				return true;

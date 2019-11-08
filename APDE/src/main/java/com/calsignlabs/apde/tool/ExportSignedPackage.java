@@ -264,7 +264,8 @@ public class ExportSignedPackage implements Tool {
 				context.getResources().getString(ComponentTarget.APP.getNameId()),
 				context.getResources().getString(ComponentTarget.WALLPAPER.getNameId()),
 				context.getResources().getString(ComponentTarget.WATCHFACE.getNameId()),
-				context.getResources().getString(ComponentTarget.VR.getNameId())
+				context.getResources().getString(ComponentTarget.VR.getNameId()),
+				context.getResources().getString(ComponentTarget.AR.getNameId())
 		};
 		
 		componentTargetAdapter = new ArrayAdapter<String>(context, R.layout.spinner_item, componentTargetList);

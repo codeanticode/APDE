@@ -1,3 +1,9 @@
+v0.6 Alpha
+
+- Run sketches targeting AR
+
+------------------------------------------------------------------------
+
 v0.5.1 Alpha
 
  - Preview mode runs sketches without installing them

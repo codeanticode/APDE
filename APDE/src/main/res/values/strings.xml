@@ -13,6 +13,7 @@
 	<string name="editor_menu_comp_select_wallpaper">Wallpaper</string>
 	<string name="editor_menu_comp_select_watchface">Watchface</string>
 	<string name="editor_menu_comp_select_vr">VR</string>
+	<string name="editor_menu_comp_select_ar">AR</string>
 	<string name="editor_menu_comp_select_preview">Preview</string>
 	<string name="editor_menu_undo">Undo</string>
 	<string name="editor_menu_redo">Redo</string>

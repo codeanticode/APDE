@@ -18,14 +18,13 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     FrameLayout frame = new FrameLayout(this);
     frame.setId(CompatUtils.getUniqueViewId());
-    setContentView(frame, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    setContentView(frame, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 
+                                                     ViewGroup.LayoutParams.MATCH_PARENT));
     
     sketch = new @@sketch_class_name@@();
     @@external@@
     PFragment fragment = new PFragment(sketch);
     fragment.setView(frame, this);
-
-    @@log_broadcaster@@
   }
   
   @Override
@@ -39,22 +38,20 @@ public class MainActivity extends AppCompatActivity {
   public void onNewIntent(Intent intent) {
     if (sketch != null) {
       sketch.onNewIntent(intent);
-    }
+    }  
   }
-
+  
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (sketch != null) {
       sketch.onActivityResult(requestCode, resultCode, data);
     }
-  }
-
+  }  
+  
   @Override
   public void onBackPressed() {
     if (sketch != null) {
       sketch.onBackPressed();
-      if (sketch.handledBackPressed) return;
     }
-    super.onBackPressed();
   }
 }

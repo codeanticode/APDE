@@ -104,6 +104,7 @@ public class Build {
 	static private final String LAYOUT_ACTIVITY_TEMPLATE = "LayoutActivity.xml.tmpl";
 	static private final String STYLES_FRAGMENT_TEMPLATE = "StylesFragment.xml.tmpl";
 	static private final String STYLES_VR_TEMPLATE = "StylesVR.xml.tmpl";
+	static private final String STYLES_AR_TEMPLATE = "StylesAR.xml.tmpl";
 	static private final String XML_WALLPAPER_TEMPLATE = "XMLWallpaper.xml.tmpl";
 	static private final String STRINGS_WALLPAPER_TEMPLATE = "StringsWallpaper.xml.tmpl";
 	static private final String XML_WATCHFACE_TEMPLATE = "XMLWatchFace.xml.tmpl";
@@ -555,6 +556,8 @@ public class Build {
 				wearableResFolder.mkdir();
 				File vrResFolder = new File(buildFolder, "vr-res");
 				vrResFolder.mkdir();
+				File arResFolder = new File(buildFolder, "ar-res");
+				arResFolder.mkdir();
 				
 				if (getAppComponent() == ComponentTarget.WATCHFACE) {
 					// Copy support-wearable res files
@@ -570,7 +573,18 @@ public class Build {
 					InputStream inputStream = am.open("vr-lib.zip");
 					createFileFromInputStream(inputStream, gvrBinaryZip);
 				}
-				
+
+				if (getAppComponent() == ComponentTarget.AR) {
+					// Copy GVR res files
+					createFolderFromZippedAssets(editor.getAssets(), "ar-res.zip", arResFolder);
+
+					// Copy ARCore binaries
+					File arcoreBinaryZip = new File(buildFolder, "ar-lib.zip");
+					InputStream inputStream = am.open("ar-lib.zip");
+					createFileFromInputStream(inputStream, arcoreBinaryZip);
+				}
+
+
 				// Copy android.jar if it hasn't been done yet
 				if (!androidJarLoc.exists()) {
 					if (verbose) {
@@ -591,8 +605,12 @@ public class Build {
 						"appcompat", "support-fragment",
 						getAppComponent() == ComponentTarget.WATCHFACE ? "support-wearable" : "",
 						getAppComponent() == ComponentTarget.WATCHFACE ? "percent" : "",
-						getAppComponent() == ComponentTarget.VR ? "gvr" : "",
-						getAppComponent() == ComponentTarget.VR ? "vr" : ""
+						getAppComponent() == ComponentTarget.VR ? "gvr-base" : "",
+						getAppComponent() == ComponentTarget.VR ? "gvr-common" : "",
+						getAppComponent() == ComponentTarget.VR ? "gvr-audio" : "",
+						getAppComponent() == ComponentTarget.VR ? "vr" : "",
+						getAppComponent() == ComponentTarget.AR ? "arcore" : "",
+						getAppComponent() == ComponentTarget.AR ? "ar" : ""
 				};//, "support-vector-drawable"};
 				String prefix = "libs/";
 				String suffix = ".jar";
@@ -846,6 +864,7 @@ public class Build {
 				"-S", buildFolder.getAbsolutePath() + "/support-res/", // The location of the support lib res folder
 				"-S", buildFolder.getAbsolutePath() + "/support-wearable-res/",
 				"-S", buildFolder.getAbsolutePath() + "/vr-res/",
+			  "-S", buildFolder.getAbsolutePath() + "/ar-res/",
 				"--extra-packages", (getAppComponent() == ComponentTarget.VR ? "com.google.vr.cardboard" : "android.support.v7.appcompat"), // Make AAPT generate R.java for AppCompat/GVR
 				"-J", genFolder.getAbsolutePath(), // The location of the /gen folder
 				"-A", assetsFolder.getAbsolutePath(), // The location of the /assets folder
@@ -1068,7 +1087,12 @@ public class Build {
 				// Add GVR binary libs
 				builder.addZipFile(new File(buildFolder, "vr-lib.zip"));
 			}
-			
+
+			if (getAppComponent() == ComponentTarget.AR) {
+				// Add ARCore binary libs
+				builder.addZipFile(new File(buildFolder, "ar-lib.zip"));
+			}
+
 			// Seal the APK
 			builder.sealApk();
 		} catch(Exception e) {
@@ -1790,6 +1814,9 @@ public class Build {
 		
 		// We import the VR library by default when using the VR target
 		if (pkg.startsWith("processing.vr.") && comp == ComponentTarget.VR) return true;
+
+		// We import the AR library by default when using the VR target
+		if (pkg.startsWith("processing.ar.") && comp == ComponentTarget.AR) return true;
 		
 		return false;
 	}
@@ -1863,7 +1890,12 @@ public class Build {
 			File valuesFolder = mkdirs(resFolder, "values", editor);
 			writeResStylesVR(valuesFolder);
 		}
-		
+
+		if (comp == ComponentTarget.AR) {
+			File valuesFolder = mkdirs(resFolder, "values", editor);
+			writeResStylesAR(valuesFolder);
+		}
+
 		File sketchFolder = getSketchFolder();
 		writeIconFiles(sketchFolder, resFolder);
 	}
@@ -2025,6 +2057,8 @@ public class Build {
 			}
 		} else if (comp == ComponentTarget.VR) {
 			writeVRActivity(srcDirectory, sketchClassName, packageName, external, injectLogBroadcaster);
+		} else if (comp == ComponentTarget.AR) {
+			writeARActivity(srcDirectory, sketchClassName, packageName, external, injectLogBroadcaster);
 		}
 	}
 	
@@ -2112,6 +2146,18 @@ public class Build {
 		
 		createFileFromTemplate(getAppComponent().getMainClassTemplate(), javaFile, replaceMap, editor);
 	}
+
+	private void writeARActivity(final File srcDirectory, String sketchClassName, String packageName, boolean external, boolean injectLogBroadcaster) {
+		File javaFile = new File(new File(srcDirectory, packageName.replace(".", "/")), "MainActivity.java");
+
+		HashMap<String, String> replaceMap = new HashMap<String, String>();
+		replaceMap.put("@@package_name@@", packageName);
+		replaceMap.put("@@sketch_class_name@@", sketchClassName);
+		replaceMap.put("@@external@@", external ? "sketch.setExternal(true);" : "");
+		replaceMap.put("@@log_broadcaster@@", injectLogBroadcaster ? getLogBroadcasterInsert() : "");
+
+		createFileFromTemplate(getAppComponent().getMainClassTemplate(), javaFile, replaceMap, editor);
+	}
 	
 	private void writeResLayoutMainActivity(final File layoutFolder, String sketchClassName) {
 		File xmlFile = new File(layoutFolder, "main.xml");
@@ -2131,7 +2177,12 @@ public class Build {
 		File xmlFile = new File(valuesFolder, "styles.xml");
 		createFileFromTemplate(STYLES_VR_TEMPLATE, xmlFile, null, editor);
 	}
-	
+
+	private void writeResStylesAR(final File valuesFolder) {
+		File xmlFile = new File(valuesFolder, "styles.xml");
+		createFileFromTemplate(STYLES_AR_TEMPLATE, xmlFile, null, editor);
+	}
+
 	private void writeResXMLWallpaper(final File xmlFolder) {
 		File xmlFile = new File(xmlFolder, "wallpaper.xml");
 		createFileFromTemplate(XML_WALLPAPER_TEMPLATE, xmlFile, null, editor);
